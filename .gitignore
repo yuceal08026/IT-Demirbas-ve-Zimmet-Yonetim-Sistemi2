@@ -1,0 +1,28 @@
+# Bağımlılıklar
+node_modules
+
+# Ortam değişkenleri (gizli bilgiler asla commit edilmez)
+.env
+.env.*
+!.env.example
+
+# Derleme çıktıları
+dist/
+build/
+coverage/
+
+# Loglar ve geçici dosyalar
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Gizli anahtarlar, sertifikalar ve veritabanı yedekleri
+*.pem
+*.key
+*.p12
+*.dump
+*.backup
+backups/
