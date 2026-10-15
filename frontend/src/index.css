@@ -1,0 +1,118 @@
+@import 'tailwindcss';
+
+/* Tasarım belirteçleri — tüm renk ve yazı tipleri buradan gelir. */
+@theme {
+  --font-sans: 'Red Hat Text', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --font-mono: 'Red Hat Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+
+  --color-ink: #1d2733;
+  --color-ink-soft: #3a4756;
+  --color-paper: #f3f5f7;
+  --color-surface: #ffffff;
+  --color-line: #dde3e9;
+  --color-steel: #7d8b99;
+  --color-steel-dark: #5b6877;
+
+  --color-cobalt: #1e4fa3;
+  --color-cobalt-dark: #173f84;
+  --color-cobalt-tint: #e8eef9;
+
+  --color-st-active: #0e7c66;
+  --color-st-active-tint: #e3f3ef;
+  --color-st-stock: #4a6382;
+  --color-st-stock-tint: #e8edf3;
+  --color-st-defect: #b3261e;
+  --color-st-defect-tint: #fbe9e7;
+  --color-warn: #8a5a00;
+  --color-warn-tint: #fdf3dc;
+
+  /* Grafik dolguları — renk körlüğü doğrulamasından geçen ayrı set (rozet metin renklerinden farklı). */
+  --color-chart-active: #178a5e;
+  --color-chart-stock: #6b8fd6;
+  --color-chart-defect: #c0392b;
+  --color-chart-single: #1e4fa3;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-cobalt);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Demirbaş etiketi: cihaz kodunu, cihaza yapıştırılan alüminyum etiket gibi gösterir. */
+  .asset-tag {
+    @apply inline-flex items-center gap-2 rounded-[5px] border font-mono font-semibold whitespace-nowrap;
+    border-color: #b9c3cd;
+    color: #26313d;
+    background: linear-gradient(180deg, #eef1f4 0%, #d9dfe5 55%, #e6eaee 100%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8);
+    letter-spacing: 0.04em;
+  }
+  .asset-tag::before,
+  .asset-tag::after {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: #9aa6b2;
+    box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.35);
+    flex: none;
+  }
+
+  .field-label {
+    @apply mb-1 block text-sm font-medium text-ink-soft;
+  }
+  .field-input {
+    @apply block w-full rounded-md border border-line bg-surface px-3 py-2 text-[15px] text-ink placeholder:text-steel;
+    @apply focus:border-cobalt focus:ring-2 focus:ring-cobalt/20 focus:outline-none;
+    @apply disabled:bg-paper disabled:text-steel;
+  }
+  .field-input[aria-invalid='true'] {
+    @apply border-st-defect focus:ring-st-defect/20;
+  }
+  .field-error {
+    @apply mt-1 text-sm text-st-defect;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors;
+    @apply disabled:cursor-not-allowed disabled:opacity-55;
+  }
+  .btn-primary {
+    @apply bg-cobalt text-white hover:bg-cobalt-dark;
+  }
+  .btn-secondary {
+    @apply border border-line bg-surface text-ink hover:bg-paper;
+  }
+  .btn-danger {
+    @apply bg-st-defect text-white hover:bg-[#962019];
+  }
+  .btn-ghost {
+    @apply text-cobalt hover:bg-cobalt-tint;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-[13px];
+  }
+
+  .panel {
+    @apply rounded-lg border border-line bg-surface;
+  }
+}

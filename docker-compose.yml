@@ -1,0 +1,61 @@
+# Tüm sistem:  cp .env.example .env  (POSTGRES_PASSWORD ve JWT_SECRET'ı doldurun)  →  docker compose up --build -d  →  http://localhost:8080
+# .env ZORUNLUDUR: POSTGRES_PASSWORD veya JWT_SECRET tanımlı değilse compose başlamaz (güvensiz varsayılan yok).
+# İlk yönetici:  docker compose exec api npm run create-admin -- --email ad.soyad@kurum.gov.tr --name "Ad Soyad"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-zimmet}
+      POSTGRES_USER: ${POSTGRES_USER:-zimmet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD tanımlı değil - .env.example dosyasını .env olarak kopyalayıp doldurun}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    # Veritabanı portu dışarı açılmaz; yalnızca iç ağdan (api) erişilir.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Parola URL içinde kullanıldığı için harf, rakam, - _ . ~ dışındaki karakterlerden kaçının.
+      DATABASE_URL: postgres://${POSTGRES_USER:-zimmet}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD tanımlı değil}@db:5432/${POSTGRES_DB:-zimmet}
+      # Üretimde zorunlu, en az 32 karakter (API eksik/zayıf değerle başlamaz).
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET tanımlı değil - .env dosyasında en az 32 karakterlik rastgele bir değer verin}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      TRUST_PROXY: ${TRUST_PROXY:-}
+      # Kendi kendine kayıt: yalnızca bu alan adlarındaki e-postalar kaydolabilir (yönetici onayıyla).
+      # Kaydı kapatmak için .env içine boş değer yazın: REGISTRATION_EMAIL_DOMAINS=
+      REGISTRATION_EMAIL_DOMAINS: ${REGISTRATION_EMAIL_DOMAINS-gop.edu.tr}
+      # İsteğe bağlı: ilk yönetici (yalnızca hiç aktif yönetici yokken bir kez kullanılır). Önerilen yöntem create-admin komutudur.
+      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL:-}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:-}
+      INITIAL_ADMIN_NAME: ${INITIAL_ADMIN_NAME:-}
+      ALERT_WARRANTY_DAYS: ${ALERT_WARRANTY_DAYS:-60}
+      ALERT_IDLE_DAYS: ${ALERT_IDLE_DAYS:-90}
+      ALERT_DEFECTIVE_DAYS: ${ALERT_DEFECTIVE_DAYS:-30}
+      APP_TIMEZONE: ${APP_TIMEZONE:-Europe/Istanbul}
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-8080}:80"
+
+volumes:
+  db-data:
